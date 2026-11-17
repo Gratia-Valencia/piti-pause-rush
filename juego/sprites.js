@@ -165,7 +165,15 @@ const Sprites = (() => {
 
   function shot(c, type, x, y, t, life, v) {
     switch (type) {
-      case 'bullet': y += 3; R(c,'#fff6b0',x,y,9,3); R(c,'#ffcf3f',x-3,y,3,3); R(c,'#ff8a3d',x-5,y+1,2,1); break;
+      case 'bullet': {
+        // Bala de Gemini (hoja «bullet»): la punta queda delante del hitbox y la estela hacia atrás
+        const d = DATA.bullet, im = IMG.bullet;
+        if (d && im && im.complete && im.naturalWidth) {
+          const a = d.anims.fly, [sx, sy, fw, fh] = d.frames[a.f[Math.floor(t * a.fps) % a.f.length]];
+          c.drawImage(im, sx, sy, fw, fh, Math.round(x + 14 - fw), Math.round(y - 4), fw, fh); break;
+        }
+      }
+      y += 3; R(c,'#fff6b0',x,y,9,3); R(c,'#ffcf3f',x-3,y,3,3); R(c,'#ff8a3d',x-5,y+1,2,1); break;
       case 'hairball': if (!fromSheet(c, 'icons', 'yarn', 0, x, y, 10, 11)) { R(c,'#7a5230',x,y,6,6); R(c,'#a9784a',x+1,y+1,3,2); } break;
       case 'meow':
         if (fromSheet(c, 'notes', 'note', ((v || 0) + 0.5) / 10, x, y + Math.round(Math.sin(t * 14 + (v || 0)) * 2), 12, 18)) {
