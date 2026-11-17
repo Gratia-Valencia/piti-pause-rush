@@ -1,0 +1,38 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.gratia.pitipauserush'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.gratia.pitipauserush'
+        minSdk 24
+        targetSdk 35
+        versionCode Integer.parseInt(System.getenv('VERSION_CODE') ?: '1')
+        versionName System.getenv('VERSION_NAME') ?: '1.0'
+    }
+
+    signingConfigs {
+        release {
+            // La llave llega desde los secretos de GitHub (KEYSTORE_B64 y KEYSTORE_PASS).
+            storeFile file('release.jks')
+            storePassword System.getenv('KEYSTORE_PASS')
+            keyAlias 'pitipause'
+            keyPassword System.getenv('KEYSTORE_PASS')
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
