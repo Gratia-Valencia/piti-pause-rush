@@ -23,7 +23,7 @@ Audio8.setMuted(save.muted);
 
 // ---------- Datos ----------
 const CHARS = {
-  mai:    { name: 'Mai',    w: 22, h: 52, sh: 21, shot: 'bullet',   rate: 0.17, dmg: 1, vx: 430, special: 'burst', cd: 8,
+  mai:    { name: 'Mai',    w: 22, h: 52, sh: 21, shot: 'bullet',   rate: 0.17, dmg: 1, vx: 430, special: 'burst', cd: 8, jump: 450,
             lines: ['Doble revólver', 'Especial:', 'Ráfaga gótica'] },
   aiden:  { name: 'Aiden',  w: 46, h: 36, sh: 14, shot: 'heart', rate: 0.32, dmg: 2, vx: 300, special: 'dash', cd: 6,
             lines: ['Corazones especiales', 'con poderes', 'Especial:', 'Embestida'] },
@@ -363,10 +363,10 @@ function update(dt) {
     p.slide = wantSlide;
   }
   if (pressed.jump) {
-    if (p.ground) { p.vy = -390; p.ground = false; p.jumps = 1; Audio8.sfx('jump'); burst(p.x + p.w / 2, p.y + p.h, '#8a8195', 5, 40); }
-    else if (p.jumps < maxJumps) { p.vy = -340; p.jumps++; Audio8.sfx('jump'); burst(p.x + p.w / 2, p.y + p.h, '#ff8fa3', 6, 50); }
+    if (p.ground) { p.vy = -(C.jump || 400); p.ground = false; p.jumps = 1; Audio8.sfx('jump'); burst(p.x + p.w / 2, p.y + p.h, '#8a8195', 5, 40); }
+    else if (p.jumps < maxJumps) { p.vy = -(C.jump || 400) * 0.88; p.jumps++; Audio8.sfx('jump'); burst(p.x + p.w / 2, p.y + p.h, '#ff8fa3', 6, 50); }
   }
-  if (!inp.jump && p.vy < -140) p.vy = -140;
+  if (!inp.jump && p.vy < -160) p.vy = -160;
   const oldBottom = p.y + p.h;
   p.vy += 1100 * dt; p.y += p.vy * dt;
   p.ground = false;
@@ -400,7 +400,7 @@ function update(dt) {
     f.t += dt; f.atk = Math.max(0, f.atk - dt);
     f.x += (f.vx || 0) * dt - sc;
     if (f.type === 'stapler') f.y = f.base + Math.sin(f.t * 3 + f.wave) * 16;
-    if (f.type === 'email' && !f.dived && f.x < p.x + 170) { f.dived = true; const dx = p.x - f.x, dy = p.y + p.h / 2 - f.y; const l = Math.hypot(dx, dy); f.vx = dx / l * 200; f.vy = dy / l * 200; f.atk = 1; }
+    if (f.type === 'email' && !f.dived && f.x < p.x + 280) { f.dived = true; const dx = p.x + 30 - f.x, dy = p.y + p.h / 2 - f.y; const l = Math.hypot(dx, dy); f.vx = dx / l * 230; f.vy = dy / l * 230; f.atk = 1; }
     if (f.type === 'email' && f.dived) f.y += f.vy * dt;
     if (f.type === 'printer') { f.fireT -= dt; if (f.fireT <= 0 && f.x < W - 20) { f.atk = 0.3; f.fireT = rnd(1.8, 2.6); g.eshots.push({ x: f.x - 6, y: f.y + 14, w: 11, h: 8, vx: -150, vy: 0 }); } }
     if (!f.dead && hit(p, f)) {

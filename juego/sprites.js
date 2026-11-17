@@ -179,7 +179,7 @@ const Sprites = (() => {
       case 'heart': {
         // Dibujo de Gemini si está (hoja «hearts»), si no, corazón pixel por código
         const k = v || 'broken';
-        if (k !== 'half' && fromSheet(c, 'hearts', k, t, x, y, 13, 13)) break;
+        if (fromSheet(c, 'hearts', k, k === 'half' ? (y % 2) : t, x, y, k === 'half' ? 9 : 13, k === 'half' ? 9 : 13)) break;
         const H = (col, dx, dy) => { R(c,col,x+1+dx,y+dy,4,3); R(c,col,x+6+dx,y+dy,4,3); R(c,col,x+dx,y+1+dy,11,4); R(c,col,x+1+dx,y+5+dy,9,2); R(c,col,x+3+dx,y+7+dy,5,2); R(c,col,x+5+dx,y+9+dy,1,1); };
         if (k === 'half') { R(c,'#1a1018',x-1,y-1,7,9); R(c,'#e8193c',x,y,5,7); R(c,'#ff9db0',x+1,y+1,2,1); break; }
         R(c,'#1a1018',x-1,y-1,13,12);
