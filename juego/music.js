@@ -100,6 +100,7 @@ const Audio8 = (() => {
         case 'shoot': tone('square', 880, t, 0.07, 0.10, null, 440); break;
         case 'meow': tone('sawtooth', 700, t, 0.18, 0.10, null, 1100); break;
         case 'hairball': tone('triangle', 300, t, 0.12, 0.25, null, 150); break;
+        case 'heart': tone('triangle', 660, t, 0.08, 0.2, null, 990); tone('square', 1320, t + 0.05, 0.06, 0.05); break;
         case 'jump': tone('square', 330, t, 0.12, 0.10, null, 660); break;
         case 'hit': noise(t, 0.15, 0.3, null, 500); tone('square', 200, t, 0.15, 0.12, null, 80); break;
         case 'enemy': noise(t, 0.08, 0.18, null, 1500); break;

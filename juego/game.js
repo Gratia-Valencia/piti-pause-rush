@@ -25,9 +25,9 @@ Audio8.setMuted(save.muted);
 const CHARS = {
   mai:    { name: 'Mai',    w: 22, h: 52, sh: 21, shot: 'bullet',   rate: 0.17, dmg: 1, vx: 430, special: 'burst', cd: 8,
             lines: ['Doble revólver', 'Especial:', 'Ráfaga gótica'] },
-  aiden:  { name: 'Aiden',  w: 46, h: 36, sh: 14, shot: 'hairball', rate: 0.32, dmg: 2, vx: 300, pierce: true, special: 'dash', cd: 6,
-            lines: ['Bolas de pelo', 'que atraviesan', 'Especial:', 'Embestida'] },
-  nobodi: { name: 'Nobodi', w: 46, h: 36, sh: 14, shot: 'meow',     rate: 0.34, dmg: 2, vx: 290, range: 0.55, special: 'sonic', cd: 7, dj: true,
+  aiden:  { name: 'Aiden',  w: 46, h: 36, sh: 14, shot: 'heart', rate: 0.32, dmg: 2, vx: 300, special: 'dash', cd: 6,
+            lines: ['Corazones especiales', 'con poderes', 'Especial:', 'Embestida'] },
+  nobodi: { name: 'Nobodi', w: 46, h: 36, sh: 14, shot: 'meow',     rate: 0.34, dmg: 2, vx: 300, range: 0.7, special: 'sonic', cd: 7, dj: true,
             lines: ['Maullido fuerte', 'Doble salto', 'Especial:', 'Maullido sónico'] },
 };
 const ORDER = ['mai', 'aiden', 'nobodi'];
@@ -276,12 +276,13 @@ function fire() {
   const p = g.p, C = CHARS[save.char];
   const dbl = g.buffs.double > 0;
   const ox = p.x + p.w + 2, oy = p.slide ? p.y + 2 : p.y + C.sh;
-  const add = (vy, dy) => g.shots.push({ type: C.shot, x: ox, y: oy + (dy || 0), w: C.shot === 'meow' ? 16 : C.shot === 'hairball' ? 10 : 9, h: C.shot === 'meow' ? 22 : C.shot === 'hairball' ? 10 : 9,
+  const add = (vy, dy) => g.shots.push({ type: C.shot, x: ox, y: oy + (dy || 0), w: C.shot === 'meow' ? 18 : C.shot === 'heart' ? 13 : 9, h: C.shot === 'meow' ? 34 : C.shot === 'heart' ? 12 : 9,
     vx: C.vx, vy: vy || 0, v: Math.floor(Math.random() * 3), dmg: C.dmg, pierce: !!C.pierce || C.shot === 'meow', life: C.range || 1.4, max: C.range || 1.4, hit: new Set() });
-  if (C.shot === 'meow') { const s = g.shots; add(0, -11); s[s.length - 1].y = oy - 11; if (dbl) add(0, -26); Audio8.sfx('meow'); }
+  if (C.shot === 'meow') { const s = g.shots; add(0, -11); s[s.length - 1].y = oy - 11; if (dbl) add(0, -30); Audio8.sfx('meow'); }
   else if (p.burst > 0) { for (const a of [-0.3, -0.15, 0, 0.15, 0.3]) add(Math.sin(a) * C.vx, 0); Audio8.sfx('shoot'); }
-  else if (dbl) { add(0, -3); add(0, 3); Audio8.sfx(C.shot === 'hairball' ? 'hairball' : 'shoot'); }
-  else { add(0, 0); Audio8.sfx(C.shot === 'hairball' ? 'hairball' : 'shoot'); }
+  else if (dbl) { add(0, -3); add(0, 3); Audio8.sfx(C.shot === 'heart' ? 'heart' : 'shoot'); }
+  else { add(0, 0); Audio8.sfx(C.shot === 'heart' ? 'heart' : 'shoot'); }
+  if (C.shot === 'heart') heartPowers();
   p.shootAnim = 0.15;
 }
 function special() {
@@ -297,6 +298,29 @@ function special() {
     for (const f of g.foes) if (f.x < W) damage(f, 3);
     if (g.boss && !g.boss.enter) damageBoss(6);
   }
+}
+// 💘 Corazones de Aiden: cada disparo sale de un tipo al azar.
+const HEARTS = ['broken', 'bat', 'fire', 'stitch'];
+function heartPowers() {
+  for (const s of g.shots) if (s.type === 'heart' && !s.kind) {
+    s.kind = pick(HEARTS);
+    if (s.kind === 'fire') { s.dmg = 3; s.pierce = true; s.vx = 340; }
+    if (s.kind === 'bat') { s.vx = 250; s.life = 1.8; s.max = 1.8; }
+  }
+}
+function heartHit(s, f) {
+  if (s.kind === 'broken' && !s.split) {
+    s.split = true; s.life = 0;
+    for (const vy of [-140, 140]) g.shots.push({ type: 'heart', kind: 'half', x: s.x, y: s.y, w: 9, h: 9, vx: 260, vy, dmg: 1, pierce: false, life: 0.8, max: 0.8, hit: new Set([f]) });
+    burst(s.x + 6, s.y + 6, '#e8193c', 6, 60);
+  }
+  if (s.kind === 'stitch' && f && f.dead && Math.random() < 0.3) g.pickups.push({ type: 'heart', x: f.x + f.w / 2 - 6, y: Math.min(f.y, GROUND - 24), w: 16, h: 16 });
+}
+function homing(s, dt) {
+  let best = null, bd = 1e9;
+  for (const f of g.foes) if (!f.dead && f.x > s.x - 10) { const d = Math.hypot(f.x - s.x, f.y - s.y); if (d < bd) { bd = d; best = f; } }
+  const ty = best ? best.y + best.h / 2 - 6 : (g.boss && !g.boss.enter ? g.boss.y + 70 : s.y);
+  s.vy += Math.max(-900, Math.min(900, (ty - s.y) * 12)) * dt; s.vy *= 0.92;
 }
 function damage(f, d) {
   f.hp -= d; burst(f.x + f.w / 2, f.y + f.h / 2, '#fff', 4, 60);
@@ -407,9 +431,10 @@ function update(dt) {
 
   // disparos
   for (const s of g.shots) {
+    if (s.kind === 'bat') homing(s, dt);
     s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
-    for (const f of g.foes) if (!f.dead && !s.hit.has(f) && hit(s, f)) { s.hit.add(f); damage(f, s.dmg); if (!s.pierce) { s.life = 0; break; } }
-    if (g.boss && !g.boss.enter && s.life > 0 && !s.hit.has('boss') && hit(s, { x: g.boss.x + 16, y: g.boss.y + 18, w: 104, h: 128 })) { s.hit.add('boss'); damageBoss(s.dmg); if (!s.pierce) s.life = 0; }
+    for (const f of g.foes) if (!f.dead && !s.hit.has(f) && hit(s, f)) { s.hit.add(f); damage(f, s.dmg); if (s.type === 'heart') heartHit(s, f); if (!s.pierce) { s.life = 0; break; } }
+    if (g.boss && !g.boss.enter && s.life > 0 && !s.hit.has('boss') && hit(s, { x: g.boss.x + 16, y: g.boss.y + 18, w: 104, h: 128 })) { s.hit.add('boss'); damageBoss(s.dmg); if (s.type === 'heart') heartHit(s, null); if (!s.pierce) s.life = 0; }
   }
   g.shots = g.shots.filter(s => s.life > 0 && s.x < W + 20 && s.y > -20 && s.y < H);
   for (const s of g.eshots) {
@@ -486,7 +511,7 @@ function drawPlay(dt) {
     Sprites.player(ctx, save.char, playerState(), g.t, Math.round(p.x), Math.round(p.y), p.w, p.h);
   }
   if (p.shield) { ctx.strokeStyle = 'rgba(127,179,255,0.7)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(p.x + p.w / 2, p.y + p.h / 2, p.w / 2 + 6, p.h / 2 + 5, 0, 0, 7); ctx.stroke(); }
-  for (const s of g.shots) Sprites.shot(ctx, s.type, Math.round(s.x), Math.round(s.y), g.t, s.life / s.max, s.v);
+  for (const s of g.shots) Sprites.shot(ctx, s.type, Math.round(s.x), Math.round(s.y), g.t, s.life / s.max, s.type === 'heart' ? s.kind : s.v);
   for (const s of g.eshots) Sprites.shot(ctx, 'paper', Math.round(s.x), Math.round(s.y), g.t);
   for (const q of g.parts) box(Math.round(q.x), Math.round(q.y), 2, 2, q.col);
   ctx.restore();

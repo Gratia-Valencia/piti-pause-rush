@@ -176,6 +176,20 @@ const Sprites = (() => {
         c.beginPath(); c.arc(x - 4, y + 8, 5, -1, 1); c.stroke();
         c.globalAlpha = 1;
         break;
+      case 'heart': {
+        // Dibujo de Gemini si está (hoja «hearts»), si no, corazón pixel por código
+        const k = v || 'broken';
+        if (k !== 'half' && fromSheet(c, 'hearts', k, t, x, y, 13, 13)) break;
+        const H = (col, dx, dy) => { R(c,col,x+1+dx,y+dy,4,3); R(c,col,x+6+dx,y+dy,4,3); R(c,col,x+dx,y+1+dy,11,4); R(c,col,x+1+dx,y+5+dy,9,2); R(c,col,x+3+dx,y+7+dy,5,2); R(c,col,x+5+dx,y+9+dy,1,1); };
+        if (k === 'half') { R(c,'#1a1018',x-1,y-1,7,9); R(c,'#e8193c',x,y,5,7); R(c,'#ff9db0',x+1,y+1,2,1); break; }
+        R(c,'#1a1018',x-1,y-1,13,12);
+        if (k === 'broken') { H('#e8193c', 0, 0); R(c,'#1a1018',x+5,y+1,1,2); R(c,'#1a1018',x+6,y+3,1,2); R(c,'#1a1018',x+5,y+5,1,2); R(c,'#1a1018',x+6,y+7,1,2); }
+        else if (k === 'bat') { const f = Math.floor(t * 12) % 2; R(c,'#2a1036',x-5,y+(f?0:3),5,3); R(c,'#2a1036',x+11,y+(f?0:3),5,3); H('#5a1f7a', 0, 0); R(c,'#ff2a3d',x+3,y+3,1,1); R(c,'#ff2a3d',x+7,y+3,1,1); }
+        else if (k === 'fire') { const f = Math.floor(t * 14) % 2; R(c,'#ff8a1f',x-4,y+2+(f?1:0),4,3); R(c,'#ffcf3f',x-7,y+3,3,2); R(c,'#ff8a1f',x+2,y-3+(f?1:0),2,3); R(c,'#ff8a1f',x+7,y-2-(f?1:0),2,3); H('#ff3d1f', 0, 0); R(c,'#ffcf3f',x+2,y+2,2,1); }
+        else { H('#ff8fb8', 0, 0); for (let i = 0; i < 4; i++) R(c,'#1a1018',x+2+i*2,y+4+(i%2),1,1); }
+        R(c,'rgba(255,255,255,0.7)',x+2,y+1,2,1);
+        break;
+      }
       case 'paper': R(c,'#1a1018',x-1,y-1,13,10); R(c,'#f4f1ec',x,y,11,8); R(c,'#aab',x+1,y+2,8,1); R(c,'#aab',x+1,y+4,7,1); break;
     }
   }
