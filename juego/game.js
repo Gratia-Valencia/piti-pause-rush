@@ -23,11 +23,11 @@ Audio8.setMuted(save.muted);
 
 // ---------- Datos ----------
 const CHARS = {
-  mai:    { name: 'Mai',    w: 16, h: 38, sh: 14, shot: 'bullet',   rate: 0.17, dmg: 1, vx: 430, special: 'burst', cd: 8,
+  mai:    { name: 'Mai',    w: 22, h: 52, sh: 21, shot: 'bullet',   rate: 0.17, dmg: 1, vx: 430, special: 'burst', cd: 8,
             lines: ['Doble revólver', 'Especial:', 'Ráfaga gótica'] },
-  aiden:  { name: 'Aiden',  w: 26, h: 20, sh: 8,  shot: 'hairball', rate: 0.32, dmg: 2, vx: 300, pierce: true, special: 'dash', cd: 6,
+  aiden:  { name: 'Aiden',  w: 46, h: 36, sh: 14, shot: 'hairball', rate: 0.32, dmg: 2, vx: 300, pierce: true, special: 'dash', cd: 6,
             lines: ['Bolas de pelo', 'que atraviesan', 'Especial:', 'Embestida'] },
-  nobodi: { name: 'Nobodi', w: 26, h: 20, sh: 8,  shot: 'meow',     rate: 0.36, dmg: 2, vx: 250, range: 0.4, special: 'sonic', cd: 7, dj: true,
+  nobodi: { name: 'Nobodi', w: 46, h: 36, sh: 14, shot: 'meow',     rate: 0.34, dmg: 2, vx: 290, range: 0.55, special: 'sonic', cd: 7, dj: true,
             lines: ['Maullido fuerte', 'Doble salto', 'Especial:', 'Maullido sónico'] },
 };
 const ORDER = ['mai', 'aiden', 'nobodi'];
@@ -248,27 +248,27 @@ function spawnFoe() {
   const diff = Math.min(1, g.dist / 3000);
   const r = Math.random();
   let f;
-  if (r < 0.22) f = { type: 'printer', w: 30, h: 26, y: GROUND - 26, hp: 3, vx: 0, fireT: rnd(0.6, 1.4) };
-  else if (r < 0.42) f = { type: 'mug', w: 18, h: 22, y: GROUND - 22, hp: 2, vx: -70 - 40 * diff };
-  else if (r < 0.64) f = { type: 'stapler', w: 26, h: 16, y: rnd(120, 190), hp: 1, vx: -50, base: 0, wave: rnd(0, 6) };
-  else if (r < 0.82 && g.dist > 250) f = { type: 'email', w: 22, h: 18, y: rnd(30, 60), hp: 1, vx: -90, dived: false };
-  else f = { type: 'crate', w: 20, h: 20, y: GROUND - 20, hp: 2, vx: 0 };
+  if (r < 0.22) f = { type: 'printer', w: 40, h: 34, y: GROUND - 34, hp: 3, vx: 0, fireT: rnd(0.6, 1.4) };
+  else if (r < 0.42) f = { type: 'mug', w: 24, h: 30, y: GROUND - 30, hp: 2, vx: -70 - 40 * diff };
+  else if (r < 0.64) f = { type: 'stapler', w: 34, h: 22, y: rnd(110, 180), hp: 1, vx: -50, base: 0, wave: rnd(0, 6) };
+  else if (r < 0.82 && g.dist > 250) f = { type: 'email', w: 30, h: 24, y: rnd(30, 60), hp: 1, vx: -90, dived: false };
+  else f = { type: 'crate', w: 26, h: 26, y: GROUND - 26, hp: 2, vx: 0 };
   f.x = W + 10; f.t = 0; f.atk = 0; f.base = f.y; f.hitBy = new Set();
   g.foes.push(f);
 }
 function spawnCoins() {
-  const n = 5, y0 = pick([GROUND - 16, GROUND - 60, GROUND - 90]);
+  const n = 5, y0 = pick([GROUND - 20, GROUND - 70, GROUND - 100]);
   const arc = Math.random() < 0.5;
-  for (let i = 0; i < n; i++) g.pickups.push({ type: 'coin', x: W + 10 + i * 16, y: y0 - (arc ? Math.sin(i / (n - 1) * Math.PI) * 30 : 0), w: 10, h: 10 });
+  for (let i = 0; i < n; i++) g.pickups.push({ type: 'coin', x: W + 10 + i * 20, y: y0 - (arc ? Math.sin(i / (n - 1) * Math.PI) * 34 : 0), w: 13, h: 13 });
 }
 function spawnPlat() {
-  const w = Math.floor(rnd(56, 96)), y = Math.floor(rnd(168, 196));
+  const w = Math.floor(rnd(64, 110)), y = Math.floor(rnd(164, 190));
   g.plats.push({ x: W + 10, y, w, h: 4 });
-  for (let i = 0; i < 3; i++) g.pickups.push({ type: 'coin', x: W + 18 + i * (w - 20) / 2, y: y - 16, w: 10, h: 10 });
+  for (let i = 0; i < 3; i++) g.pickups.push({ type: 'coin', x: W + 18 + i * (w - 24) / 2, y: y - 18, w: 13, h: 13 });
 }
 function spawnBoss() {
   const hp = 40 + g.bosses * 18;
-  g.boss = { x: W + 20, y: GROUND - 112, w: 100, h: 112, atkAnim: 0, hp, maxHp: hp, t: 0, atkT: 2.5, hurt: 0, phase: 1, enter: true };
+  g.boss = { x: W + 20, y: GROUND - 150, w: 134, h: 150, atkAnim: 0, hp, maxHp: hp, t: 0, atkT: 2.5, hurt: 0, phase: 1, enter: true };
   say('¡LA FOTOCOPIADORA INFERNAL!', 2.5); Audio8.play('boss');
 }
 
@@ -276,9 +276,9 @@ function fire() {
   const p = g.p, C = CHARS[save.char];
   const dbl = g.buffs.double > 0;
   const ox = p.x + p.w + 2, oy = p.slide ? p.y + 2 : p.y + C.sh;
-  const add = (vy, dy) => g.shots.push({ type: C.shot, x: ox, y: oy + (dy || 0), w: C.shot === 'meow' ? 14 : C.shot === 'hairball' ? 6 : 6, h: C.shot === 'meow' ? 18 : C.shot === 'hairball' ? 6 : 2,
+  const add = (vy, dy) => g.shots.push({ type: C.shot, x: ox, y: oy + (dy || 0), w: C.shot === 'meow' ? 16 : C.shot === 'hairball' ? 10 : 9, h: C.shot === 'meow' ? 22 : C.shot === 'hairball' ? 10 : 9,
     vx: C.vx, vy: vy || 0, v: Math.floor(Math.random() * 3), dmg: C.dmg, pierce: !!C.pierce || C.shot === 'meow', life: C.range || 1.4, max: C.range || 1.4, hit: new Set() });
-  if (C.shot === 'meow') { const s = g.shots; add(0, -9); s[s.length - 1].y = oy - 9; if (dbl) add(0, -20); Audio8.sfx('meow'); }
+  if (C.shot === 'meow') { const s = g.shots; add(0, -11); s[s.length - 1].y = oy - 11; if (dbl) add(0, -26); Audio8.sfx('meow'); }
   else if (p.burst > 0) { for (const a of [-0.3, -0.15, 0, 0.15, 0.3]) add(Math.sin(a) * C.vx, 0); Audio8.sfx('shoot'); }
   else if (dbl) { add(0, -3); add(0, 3); Audio8.sfx(C.shot === 'hairball' ? 'hairball' : 'shoot'); }
   else { add(0, 0); Audio8.sfx(C.shot === 'hairball' ? 'hairball' : 'shoot'); }
@@ -310,7 +310,7 @@ function damageBoss(d) {
   const b = g.boss; b.hp -= d; b.hurt = 0.1;
   if (b.hp <= b.maxHp / 2) b.phase = 2;
   if (b.hp <= 0) {
-    for (let i = 0; i < 6; i++) burst(b.x + rnd(0, 100), b.y + rnd(0, 110), pick(['#ff4d6d', '#ffcf3f', '#fff']), 14, 160);
+    for (let i = 0; i < 6; i++) burst(b.x + rnd(0, 134), b.y + rnd(0, 150), pick(['#ff4d6d', '#ffcf3f', '#fff']), 14, 160);
     Audio8.sfx('boom'); g.shake = 0.6; g.flash = 0.3;
     for (let i = 0; i < 12; i++) g.pickups.push({ type: 'coin', x: b.x + rnd(0, 80), y: rnd(120, 200), w: 10, h: 10 });
     g.pickups.push({ type: 'heart', x: b.x + 40, y: 150, w: 12, h: 12 });
@@ -339,8 +339,8 @@ function update(dt) {
     p.slide = wantSlide;
   }
   if (pressed.jump) {
-    if (p.ground) { p.vy = -360; p.ground = false; p.jumps = 1; Audio8.sfx('jump'); burst(p.x + p.w / 2, p.y + p.h, '#8a8195', 5, 40); }
-    else if (p.jumps < maxJumps) { p.vy = -320; p.jumps++; Audio8.sfx('jump'); burst(p.x + p.w / 2, p.y + p.h, '#ff8fa3', 6, 50); }
+    if (p.ground) { p.vy = -390; p.ground = false; p.jumps = 1; Audio8.sfx('jump'); burst(p.x + p.w / 2, p.y + p.h, '#8a8195', 5, 40); }
+    else if (p.jumps < maxJumps) { p.vy = -340; p.jumps++; Audio8.sfx('jump'); burst(p.x + p.w / 2, p.y + p.h, '#ff8fa3', 6, 50); }
   }
   if (!inp.jump && p.vy < -140) p.vy = -140;
   const oldBottom = p.y + p.h;
@@ -369,7 +369,7 @@ function update(dt) {
     g.platT -= dt; if (g.platT <= 0) { spawnPlat(); g.platT = rnd(4, 8); }
   }
   g.coinT -= dt; if (g.coinT <= 0) { spawnCoins(); g.coinT = rnd(2.5, 4.5); }
-  g.pupT -= dt; if (g.pupT <= 0) { const t = pick(PUPS); g.pickups.push({ type: t, x: W + 10, y: rnd(140, 190), w: 12, h: 12, pup: true }); g.pupT = rnd(10, 16); }
+  g.pupT -= dt; if (g.pupT <= 0) { const t = pick(PUPS); g.pickups.push({ type: t, x: W + 10, y: rnd(130, 185), w: 16, h: 16, pup: true }); g.pupT = rnd(10, 16); }
 
   // enemigos
   for (const f of g.foes) {
@@ -378,7 +378,7 @@ function update(dt) {
     if (f.type === 'stapler') f.y = f.base + Math.sin(f.t * 3 + f.wave) * 16;
     if (f.type === 'email' && !f.dived && f.x < p.x + 170) { f.dived = true; const dx = p.x - f.x, dy = p.y + p.h / 2 - f.y; const l = Math.hypot(dx, dy); f.vx = dx / l * 200; f.vy = dy / l * 200; f.atk = 1; }
     if (f.type === 'email' && f.dived) f.y += f.vy * dt;
-    if (f.type === 'printer') { f.fireT -= dt; if (f.fireT <= 0 && f.x < W - 20) { f.atk = 0.3; f.fireT = rnd(1.8, 2.6); g.eshots.push({ x: f.x - 6, y: f.y + 10, w: 8, h: 6, vx: -150, vy: 0 }); } }
+    if (f.type === 'printer') { f.fireT -= dt; if (f.fireT <= 0 && f.x < W - 20) { f.atk = 0.3; f.fireT = rnd(1.8, 2.6); g.eshots.push({ x: f.x - 6, y: f.y + 14, w: 11, h: 8, vx: -150, vy: 0 }); } }
     if (!f.dead && hit(p, f)) {
       if (p.dash > 0) damage(f, 5);
       else if (f.type !== 'crate' || true) { hurtPlayer(); if (f.type !== 'crate' && f.type !== 'printer') damage(f, 99); }
@@ -390,26 +390,26 @@ function update(dt) {
   const b = g.boss;
   if (b) {
     b.t += dt; b.hurt = Math.max(0, b.hurt - dt);
-    if (b.enter) { b.x -= 80 * dt; if (b.x <= 360) { b.x = 360; b.enter = false; } }
+    if (b.enter) { b.x -= 80 * dt; if (b.x <= 330) { b.x = 330; b.enter = false; } }
     else {
-      b.y = GROUND - 112 + Math.sin(b.t * 1.5) * 2; b.atkAnim = Math.max(0, b.atkAnim - dt);
+      b.y = GROUND - 150 + Math.sin(b.t * 1.5) * 2; b.atkAnim = Math.max(0, b.atkAnim - dt);
       b.atkT -= dt;
       if (b.atkT <= 0) {
         b.atkAnim = 0.4; const a = Math.random();
         if (a < 0.55) { for (const hy of pick([[GROUND - 12, GROUND - 50], [GROUND - 30, GROUND - 70], [GROUND - 12, GROUND - 70]])) g.eshots.push({ x: b.x, y: hy, w: 8, h: 6, vx: -170 - (b.phase - 1) * 40, vy: 0 }); }
-        else if (a < 0.8) { const f = { type: 'email', w: 22, h: 18, x: b.x, y: b.y + 30, hp: 1, vx: -90, dived: false, t: 0, atk: 0, hitBy: new Set() }; f.base = f.y; g.foes.push(f); }
+        else if (a < 0.8) { const f = { type: 'email', w: 30, h: 24, x: b.x, y: b.y + 40, hp: 1, vx: -90, dived: false, t: 0, atk: 0, hitBy: new Set() }; f.base = f.y; g.foes.push(f); }
         else { for (let i = 0; i < 5; i++) g.eshots.push({ x: b.x + 20, y: b.y + 20, w: 8, h: 6, vx: -120 - i * 25, vy: -160 + i * 25, grav: true }); }
         b.atkT = b.phase === 2 ? rnd(1, 1.6) : rnd(1.6, 2.4);
       }
     }
-    if (hit(p, { x: b.x + 12, y: b.y + 14, w: 78, h: 96 })) { hurtPlayer(); if (p.dash > 0 && !b.enter) damageBoss(3); }
+    if (hit(p, { x: b.x + 16, y: b.y + 18, w: 104, h: 128 })) { hurtPlayer(); if (p.dash > 0 && !b.enter) damageBoss(3); }
   }
 
   // disparos
   for (const s of g.shots) {
     s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
     for (const f of g.foes) if (!f.dead && !s.hit.has(f) && hit(s, f)) { s.hit.add(f); damage(f, s.dmg); if (!s.pierce) { s.life = 0; break; } }
-    if (g.boss && !g.boss.enter && s.life > 0 && !s.hit.has('boss') && hit(s, { x: g.boss.x + 12, y: g.boss.y + 14, w: 78, h: 96 })) { s.hit.add('boss'); damageBoss(s.dmg); if (!s.pierce) s.life = 0; }
+    if (g.boss && !g.boss.enter && s.life > 0 && !s.hit.has('boss') && hit(s, { x: g.boss.x + 16, y: g.boss.y + 18, w: 104, h: 128 })) { s.hit.add('boss'); damageBoss(s.dmg); if (!s.pierce) s.life = 0; }
   }
   g.shots = g.shots.filter(s => s.life > 0 && s.x < W + 20 && s.y > -20 && s.y < H);
   for (const s of g.eshots) {
@@ -466,6 +466,12 @@ function drawPlay(dt) {
     box(Math.round(pl.x) + 4, pl.y + 6, 3, GROUND - pl.y - 6, '#5a3a22'); box(Math.round(pl.x) + pl.w - 7, pl.y + 6, 3, GROUND - pl.y - 6, '#5a3a22');
     box(Math.round(pl.x) + 10, pl.y - 9, 14, 9, '#2a2d35'); box(Math.round(pl.x) + 11, pl.y - 8, 12, 6, '#5fd3ff');
   }
+  // sombras en el suelo (ayudan a ver dónde está cada uno)
+  const shadow = (x, w, y) => { const d = Math.max(0, GROUND - y); ctx.globalAlpha = Math.max(0.12, 0.45 - d / 300); ctx.fillStyle = '#05030a';
+    ctx.beginPath(); ctx.ellipse(x, GROUND + 1, Math.max(4, w / 2 + 3 - d / 20), 3, 0, 0, 7); ctx.fill(); ctx.globalAlpha = 1; };
+  shadow(g.p.x + g.p.w / 2, g.p.w, g.p.y + g.p.h);
+  for (const f of g.foes) shadow(f.x + f.w / 2, f.w, f.y + f.h);
+  if (g.boss) shadow(g.boss.x + 67, 110, g.boss.y + 150);
   for (const it of g.pickups) Sprites.pickup(ctx, it.type, Math.round(it.x), Math.round(it.y), g.t + it.x * 0.01);
   for (const f of g.foes) Sprites.enemy(ctx, f.type, f.t, Math.round(f.x), Math.round(f.y), f.atk > 0, f.w, f.h);
   if (g.boss) {
@@ -491,10 +497,10 @@ function drawPlay(dt) {
 function drawHud() {
   const p = g.p;
   for (let i = 0; i < p.maxHp; i++) {
-    if (i < p.hp) Sprites.pickup(ctx, 'heart', 6 + i * 15, 5, 0);
-    else { ctx.globalAlpha = 0.25; Sprites.pickup(ctx, 'heart', 6 + i * 15, 5, 0); ctx.globalAlpha = 1; }
+    if (i < p.hp) Sprites.pickup(ctx, 'heart', 6 + i * 17, 5, 0);
+    else { ctx.globalAlpha = 0.25; Sprites.pickup(ctx, 'heart', 6 + i * 17, 5, 0); ctx.globalAlpha = 1; }
   }
-  if (p.shield) Sprites.pickup(ctx, 'shield', 8 + p.maxHp * 15, 5, 0);
+  if (p.shield) Sprites.pickup(ctx, 'shield', 8 + p.maxHp * 17, 5, 0);
   text(Math.floor(g.dist) + ' m', W / 2, 5, 8, '#fff', 'center');
   Sprites.pickup(ctx, 'coin', W - 78, 4, 0); text('' + g.coins, W - 64, 6, 8, '#ffcf3f');
   // pausa
@@ -530,9 +536,9 @@ function drawTitle(dt) {
   ctx.fillStyle = 'rgba(13,10,18,0.45)'; ctx.fillRect(0, 0, W, H);
   if (cw) { ctx.drawImage(BG.cover, W - cw, 0); box(W - cw - 2, 0, 2, H, '#ff4d6d'); }
   else {
-    Sprites.player(ctx, 'mai', 'run', stateT, 150, GROUND - 38, 16, 38);
-    Sprites.player(ctx, 'aiden', 'run', stateT + 0.2, 104, GROUND - 20, 26, 20);
-    Sprites.player(ctx, 'nobodi', 'run', stateT + 0.4, 62, GROUND - 20, 26, 20);
+    Sprites.player(ctx, 'mai', 'run', stateT, 150, GROUND - 52, 22, 52);
+    Sprites.player(ctx, 'aiden', 'run', stateT + 0.2, 96, GROUND - 36, 46, 36);
+    Sprites.player(ctx, 'nobodi', 'run', stateT + 0.4, 40, GROUND - 36, 46, 36);
   }
   const y = 26 + Math.sin(stateT * 2) * 2;
   text('PITI-PAUSE', cx, y, 32, '#ff4d6d', 'center', '#2a0a10');
@@ -638,8 +644,10 @@ Promise.race([fontReady, new Promise(r => setTimeout(r, 1500))]).then(() => {
     selIdx = { 'aiden': 1, 'nobodi': 2 }[h.split('-')[2]] || 0; startRun(); isTouch = h.includes('touch');
     keys.add('KeyJ'); setInterval(() => { keys.add('Space'); setTimeout(() => keys.delete('Space'), 250); }, 1400);
     if (h.includes('boss')) g.dist = 1490;
+    if (h.includes('stats')) { keys.delete('Space'); }
     const secs = h.includes('boss') ? 6 : 9; // avanza la partida sin esperar
     for (let i = 0; i < secs * 60; i++) { readInput(); update(1 / 60); if (state !== 'play') break; drawWorld(1 / 60, g.speed); }
+    if (h.includes('stats')) { for (let i = 0; i < 25 * 60 && state === 'play'; i++) { readInput(); update(1 / 60); } if (state === 'play') endRun(); }
     if (h.includes('special')) { touch.special = true; readInput(); update(1 / 60); touch.special = false; for (let i = 0; i < 20; i++) { readInput(); update(1 / 60); } }
   }
   if (h === '#prueba-over') { startRun(); g.dist = 842; g.coins = 37; g.kills = 12; endRun(); }

@@ -132,7 +132,7 @@ const Sprites = (() => {
   }
 
   function boss(c, t, x, y, hurt, phase, atk) {
-    if (fromSheet(c, 'boss', hurt ? 'hurt' : atk ? 'atk' : 'idle', t, x, y, 100, 112)) return;
+    if (fromSheet(c, 'boss', hurt ? 'hurt' : atk ? 'atk' : 'idle', t, x, y, 134, 150)) return;
     const f = Math.floor(t * 4) % 2;
     R(c,'#5d6170',x,y+20,90,66); R(c,'#8a8f9e',x+4,y+24,82,40); R(c,'#3a3d47',x,y+84,90,6);
     R(c,'#2a2d35',x+10,y+6,70,16); R(c,'#c8ccd8',x+14,y+10,62,8);
@@ -143,11 +143,11 @@ const Sprites = (() => {
     if (phase === 2) { R(c,'#ff6a00',x+30,y+12+(f?0:2),4,4); R(c,'#ffe066',x+60,y+10+(f?2:0),3,3); }
   }
 
-  const ICON_SIZE = { coin: 12, double: 14 };
+  const ICON_SIZE = { coin: 14, double: 16 };
   function pickup(c, type, x, y, t) {
     const b = Math.round(Math.sin(t * 5) * 1.5);
     y += b;
-    const sz = ICON_SIZE[type] || 12;
+    const sz = ICON_SIZE[type] || 15;
     if (fromSheet(c, 'icons', type, 0, x, y, sz - 2, sz)) return;
     switch (type) {
       case 'coin':
@@ -165,18 +165,18 @@ const Sprites = (() => {
 
   function shot(c, type, x, y, t, life, v) {
     switch (type) {
-      case 'bullet': R(c,'#fff6b0',x,y,6,2); R(c,'#ffcf3f',x-2,y,2,2); break;
-      case 'hairball': if (!fromSheet(c, 'icons', 'yarn', 0, x, y, 6, 8)) { R(c,'#7a5230',x,y,6,6); R(c,'#a9784a',x+1,y+1,3,2); } break;
+      case 'bullet': y += 3; R(c,'#fff6b0',x,y,9,3); R(c,'#ffcf3f',x-3,y,3,3); R(c,'#ff8a3d',x-5,y+1,2,1); break;
+      case 'hairball': if (!fromSheet(c, 'icons', 'yarn', 0, x, y, 10, 11)) { R(c,'#7a5230',x,y,6,6); R(c,'#a9784a',x+1,y+1,3,2); } break;
       case 'meow':
-        if (fromSheet(c, 'notes', 'note', ((v || 0) + 0.5) / 10, x, y + 1 + Math.round(Math.sin(t * 14 + (v || 0)) * 2), 12, 14)) {
+        if (fromSheet(c, 'notes', 'note', ((v || 0) + 0.5) / 10, x, y + Math.round(Math.sin(t * 14 + (v || 0)) * 2), 12, 18)) {
           c.globalAlpha = Math.max(0, life) * 0.6;
         }
         c.strokeStyle = 'rgba(255,143,163,' + Math.max(0, life).toFixed(2) + ')'; c.lineWidth = 2;
-        c.beginPath(); c.arc(x, y + 8, 8, -1, 1); c.stroke();
+        c.beginPath(); c.arc(x, y + 11, 11, -1, 1); c.stroke();
         c.beginPath(); c.arc(x - 4, y + 8, 5, -1, 1); c.stroke();
         c.globalAlpha = 1;
         break;
-      case 'paper': R(c,'#f4f1ec',x,y,8,6); R(c,'#aab',x+1,y+1,6,1); R(c,'#aab',x+1,y+3,5,1); break;
+      case 'paper': R(c,'#1a1018',x-1,y-1,13,10); R(c,'#f4f1ec',x,y,11,8); R(c,'#aab',x+1,y+2,8,1); R(c,'#aab',x+1,y+4,7,1); break;
     }
   }
 
