@@ -25,9 +25,9 @@ Audio8.setMuted(save.muted);
 const CHARS = {
   mai:    { name: 'Mai',    w: 22, h: 52, sh: 21, shot: 'bullet',   rate: 0.17, dmg: 1, vx: 430, special: 'burst', cd: 8, jump: 450,
             lines: ['Doble revólver', 'Especial:', 'Ráfaga gótica'] },
-  aiden:  { name: 'Aiden',  w: 46, h: 36, sh: 14, shot: 'heart', rate: 0.32, dmg: 2, vx: 300, special: 'dash', cd: 6,
+  aiden:  { name: 'Aiden',  w: 46, h: 36, sh: 14, shot: 'heart', rate: 0.3, dmg: 1, vx: 300, special: 'dash', cd: 6,
             lines: ['Corazones especiales', 'con poderes', 'Especial:', 'Embestida'] },
-  nobodi: { name: 'Nobodi', w: 46, h: 36, sh: 14, shot: 'meow',     rate: 0.34, dmg: 2, vx: 300, range: 0.7, special: 'sonic', cd: 7, dj: true,
+  nobodi: { name: 'Nobodi', w: 46, h: 36, sh: 14, shot: 'meow',     rate: 0.34, dmg: 1, vx: 300, range: 0.7, special: 'sonic', cd: 7, dj: true,
             lines: ['Maullido fuerte', 'Doble salto', 'Especial:', 'Maullido sónico'] },
 };
 const ORDER = ['mai', 'aiden', 'nobodi'];
@@ -38,6 +38,7 @@ const UPGRADES = [
   { id: 'shield',  name: 'Escudo inicial', icon: 'shield', desc: 'Empiezas protegida',   costs: [100] },
   { id: 'fire',    name: 'Cadencia',       icon: 'double', desc: 'Disparas más rápido',  costs: [80, 160, 300] },
   { id: 'special', name: 'Especial rápido',icon: 'clock',  desc: 'El especial carga antes', costs: [80, 160, 300] },
+  { id: 'dmg',     name: 'Más daño',       icon: 'star',   desc: '+50 % de daño',        costs: [100, 220, 400, 650] },
   { id: 'coffee',  name: 'Café largo',     icon: 'coffee', desc: 'Power-ups duran más',  costs: [70, 150] },
 ];
 const PUPS = ['coffee', 'heart', 'shield', 'double', 'magnet', 'clock'];
@@ -101,10 +102,17 @@ function tile(im, k, y) {
   const w = im.naturalWidth, o = -((scrollX * k) % w);
   for (let x = Math.floor(o); x < W; x += w) ctx.drawImage(im, x, y);
 }
+// Cada fase, otro cielo: atardecer → noche → alerta roja → aurora morada…
+const TINTS = [null, 'rgba(10,14,60,0.45)', 'rgba(140,10,20,0.35)', 'rgba(70,0,110,0.40)', 'rgba(0,60,70,0.40)'];
+function phaseTint() {
+  if (state !== 'play' && state !== 'pause') return;
+  const ph = g ? g.bosses : 0; if (!ph) return;
+  ctx.fillStyle = TINTS[1 + (ph - 1) % (TINTS.length - 1)]; ctx.fillRect(0, 0, W, H);
+}
 function drawWorld(dt, speed) {
   scrollX += speed * dt;
   if (ok(BG.sky) && ok(BG.mid) && ok(BG.front)) {
-    tile(BG.sky, 0.08, 0); tile(BG.mid, 0.3, 0); tile(BG.front, 1, -12);
+    tile(BG.sky, 0.08, 0); phaseTint(); tile(BG.mid, 0.3, 0); tile(BG.front, 1, -12);
     return;
   }
   ctx.drawImage(SKY, 0, 0);
@@ -248,11 +256,12 @@ function spawnFoe() {
   const diff = Math.min(1, g.dist / 3000);
   const r = Math.random();
   let f;
-  if (r < 0.22) f = { type: 'printer', w: 40, h: 34, y: GROUND - 34, hp: 3, vx: 0, fireT: rnd(0.6, 1.4) };
-  else if (r < 0.42) f = { type: 'mug', w: 24, h: 30, y: GROUND - 30, hp: 2, vx: -70 - 40 * diff };
-  else if (r < 0.64) f = { type: 'stapler', w: 34, h: 22, y: rnd(110, 180), hp: 1, vx: -50, base: 0, wave: rnd(0, 6) };
-  else if (r < 0.82 && g.dist > 250) f = { type: 'email', w: 30, h: 24, y: rnd(30, 60), hp: 1, vx: -90, dived: false };
-  else f = { type: 'crate', w: 26, h: 26, y: GROUND - 26, hp: 2, vx: 0 };
+  const ph = g.bosses; // fase - 1: cada jefe derrotado, los bichos aguantan un tiro más
+  if (r < 0.22) f = { type: 'printer', w: 40, h: 34, y: GROUND - 34, hp: 1 + ph * 1.5, vx: 0, fireT: rnd(0.6, 1.4) };
+  else if (r < 0.42) f = { type: 'mug', w: 24, h: 30, y: GROUND - 30, hp: 1 + ph, vx: -70 - 40 * diff };
+  else if (r < 0.64) f = { type: 'stapler', w: 34, h: 22, y: rnd(110, 180), hp: 1 + ph, vx: -50, base: 0, wave: rnd(0, 6) };
+  else if (r < 0.82 && g.dist > 250) f = { type: 'email', w: 30, h: 24, y: rnd(30, 60), hp: 1 + ph, vx: -90, dived: false };
+  else f = { type: 'crate', w: 26, h: 26, y: GROUND - 26, hp: 1 + ph, vx: 0 };
   f.x = W + 10; f.t = 0; f.atk = 0; f.base = f.y; f.hitBy = new Set();
   g.foes.push(f);
 }
@@ -267,7 +276,7 @@ function spawnPlat() {
   for (let i = 0; i < 3; i++) g.pickups.push({ type: 'coin', x: W + 18 + i * (w - 24) / 2, y: y - 18, w: 13, h: 13 });
 }
 function spawnBoss() {
-  const hp = 40 + g.bosses * 18;
+  const hp = 35 + g.bosses * 35;
   g.boss = { x: W + 20, y: GROUND - 150, w: 134, h: 150, atkAnim: 0, hp, maxHp: hp, t: 0, atkT: 2.5, hurt: 0, phase: 1, enter: true };
   say('¡LA FOTOCOPIADORA INFERNAL!', 2.5); Audio8.play('boss');
 }
@@ -277,7 +286,7 @@ function fire() {
   const dbl = g.buffs.double > 0;
   const ox = p.x + p.w + 2, oy = p.slide ? p.y + 2 : p.y + C.sh;
   const add = (vy, dy) => g.shots.push({ type: C.shot, x: ox, y: oy + (dy || 0), w: C.shot === 'meow' ? 18 : C.shot === 'heart' ? 13 : 9, h: C.shot === 'meow' ? 34 : C.shot === 'heart' ? 12 : 9,
-    vx: C.vx, vy: vy || 0, v: Math.floor(Math.random() * 3), dmg: C.dmg, pierce: !!C.pierce || C.shot === 'meow', life: C.range || 1.4, max: C.range || 1.4, hit: new Set() });
+    vx: C.vx, vy: vy || 0, v: Math.floor(Math.random() * 3), dmg: C.dmg * (1 + 0.5 * lvl('dmg')), pierce: !!C.pierce || C.shot === 'meow', life: C.range || 1.4, max: C.range || 1.4, hit: new Set() });
   if (C.shot === 'meow') { const s = g.shots; add(0, -11); s[s.length - 1].y = oy - 11; if (dbl) add(0, -30); Audio8.sfx('meow'); }
   else if (p.burst > 0) { for (const a of [-0.3, -0.15, 0, 0.15, 0.3]) add(Math.sin(a) * C.vx, 0); Audio8.sfx('shoot'); }
   else if (dbl) { add(0, -3); add(0, 3); Audio8.sfx(C.shot === 'heart' ? 'heart' : 'shoot'); }
@@ -304,14 +313,14 @@ const HEARTS = ['broken', 'bat', 'fire', 'stitch'];
 function heartPowers() {
   for (const s of g.shots) if (s.type === 'heart' && !s.kind) {
     s.kind = pick(HEARTS);
-    if (s.kind === 'fire') { s.dmg = 3; s.pierce = true; s.vx = 340; }
+    if (s.kind === 'fire') { s.dmg *= 3; s.pierce = true; s.vx = 340; }
     if (s.kind === 'bat') { s.vx = 250; s.life = 1.8; s.max = 1.8; }
   }
 }
 function heartHit(s, f) {
   if (s.kind === 'broken' && !s.split) {
     s.split = true; s.life = 0;
-    for (const vy of [-140, 140]) g.shots.push({ type: 'heart', kind: 'half', x: s.x, y: s.y, w: 9, h: 9, vx: 260, vy, dmg: 1, pierce: false, life: 0.8, max: 0.8, hit: new Set([f]) });
+    for (const vy of [-140, 140]) g.shots.push({ type: 'heart', kind: 'half', x: s.x, y: s.y, w: 9, h: 9, vx: 260, vy, dmg: s.dmg, pierce: false, life: 0.8, max: 0.8, hit: new Set([f]) });
     burst(s.x + 6, s.y + 6, '#e8193c', 6, 60);
   }
   if (s.kind === 'stitch' && f && f.dead && Math.random() < 0.3) g.pickups.push({ type: 'heart', x: f.x + f.w / 2 - 6, y: Math.min(f.y, GROUND - 24), w: 16, h: 16 });
@@ -339,7 +348,7 @@ function damageBoss(d) {
     for (let i = 0; i < 12; i++) g.pickups.push({ type: 'coin', x: b.x + rnd(0, 80), y: rnd(120, 200), w: 10, h: 10 });
     g.pickups.push({ type: 'heart', x: b.x + 40, y: 150, w: 12, h: 12 });
     g.kills += 10; g.bosses++; g.boss = null; g.nextBoss = g.dist + 1800;
-    say('¡JEFE DERROTADO! +10', 2.5); Audio8.play('run');
+    say('¡JEFE DERROTADO! · FASE ' + (g.bosses + 1), 3); g.phaseT = 3; Audio8.play('run');
   }
 }
 
@@ -421,7 +430,7 @@ function update(dt) {
       if (b.atkT <= 0) {
         b.atkAnim = 0.4; const a = Math.random();
         if (a < 0.55) { for (const hy of pick([[GROUND - 12, GROUND - 50], [GROUND - 30, GROUND - 70], [GROUND - 12, GROUND - 70]])) g.eshots.push({ x: b.x, y: hy, w: 8, h: 6, vx: -170 - (b.phase - 1) * 40, vy: 0 }); }
-        else if (a < 0.8) { const f = { type: 'email', w: 30, h: 24, x: b.x, y: b.y + 40, hp: 1, vx: -90, dived: false, t: 0, atk: 0, hitBy: new Set() }; f.base = f.y; g.foes.push(f); }
+        else if (a < 0.8) { const f = { type: 'email', w: 30, h: 24, x: b.x, y: b.y + 40, hp: 1 + g.bosses, vx: -90, dived: false, t: 0, atk: 0, hitBy: new Set() }; f.base = f.y; g.foes.push(f); }
         else { for (let i = 0; i < 5; i++) g.eshots.push({ x: b.x + 20, y: b.y + 20, w: 8, h: 6, vx: -120 - i * 25, vy: -160 + i * 25, grav: true }); }
         b.atkT = b.phase === 2 ? rnd(1, 1.6) : rnd(1.6, 2.4);
       }
@@ -531,7 +540,7 @@ function drawHud() {
     else { ctx.globalAlpha = 0.25; Sprites.pickup(ctx, 'heart', 6 + i * 17, 5, 0); ctx.globalAlpha = 1; }
   }
   if (p.shield) Sprites.pickup(ctx, 'shield', 8 + p.maxHp * 17, 5, 0);
-  text(Math.floor(g.dist) + ' m', W / 2, 5, 8, '#fff', 'center');
+  text(Math.floor(g.dist) + ' m  ·  Fase ' + (g.bosses + 1), W / 2, 5, 8, '#fff', 'center');
   Sprites.pickup(ctx, 'coin', W - 78, 4, 0); text('' + g.coins, W - 64, 6, 8, '#ffcf3f');
   // pausa
   box(W - 26, 3, 20, 18, 'rgba(0,0,0,0.4)', '#ff4d6d'); box(W - 20, 8, 3, 8, '#fff'); box(W - 14, 8, 3, 8, '#fff');
@@ -642,7 +651,7 @@ function drawOver(dt) {
   rows.forEach((r, i) => { text(r[0], 140, 104 + i * 14, 8, '#d8c8e0'); text('+' + r[1], 340, 104 + i * 14, 8, '#ffcf3f', 'right'); });
   box(140, 146, 200, 1, '#5a4060');
   text('Total', 140, 152, 8, '#fff'); text('+' + o.earned, 340, 152, 8, '#ffcf3f', 'right');
-  if (o.bosses) text('Fotocopiadoras destruidas: ' + o.bosses, W / 2, 168, 8, '#ffb3c1', 'center');
+  if (o.bosses) text('Fase ' + (o.bosses + 1) + ' · Fotocopiadoras destruidas: ' + o.bosses, W / 2, 168, 8, '#ffb3c1', 'center');
   button(30, 196, 130, 26, 'OTRA VEZ', startRun, { active: true });
   button(175, 196, 130, 26, 'MEJORAS', () => setState('shop'));
   button(320, 196, 130, 26, 'MENÚ', () => setState('title'));
@@ -674,6 +683,7 @@ Promise.race([fontReady, new Promise(r => setTimeout(r, 1500))]).then(() => {
     selIdx = { 'aiden': 1, 'nobodi': 2 }[h.split('-')[2]] || 0; startRun(); isTouch = h.includes('touch');
     keys.add('KeyJ'); setInterval(() => { keys.add('Space'); setTimeout(() => keys.delete('Space'), 250); }, 1400);
     if (h.includes('boss')) g.dist = 1490;
+    if (h.includes('fase')) { g.bosses = 2; g.nextBoss = 99999; }
     if (h.includes('stats')) { keys.delete('Space'); }
     const secs = h.includes('boss') ? 6 : 9; // avanza la partida sin esperar
     for (let i = 0; i < secs * 60; i++) { readInput(); update(1 / 60); if (state !== 'play') break; drawWorld(1 / 60, g.speed); }
