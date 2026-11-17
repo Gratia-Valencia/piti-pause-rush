@@ -277,7 +277,7 @@ function fire() {
   const dbl = g.buffs.double > 0;
   const ox = p.x + p.w + 2, oy = p.slide ? p.y + 2 : p.y + C.sh;
   const add = (vy, dy) => g.shots.push({ type: C.shot, x: ox, y: oy + (dy || 0), w: C.shot === 'meow' ? 14 : C.shot === 'hairball' ? 6 : 6, h: C.shot === 'meow' ? 18 : C.shot === 'hairball' ? 6 : 2,
-    vx: C.vx, vy: vy || 0, dmg: C.dmg, pierce: !!C.pierce || C.shot === 'meow', life: C.range || 1.4, max: C.range || 1.4, hit: new Set() });
+    vx: C.vx, vy: vy || 0, v: Math.floor(Math.random() * 3), dmg: C.dmg, pierce: !!C.pierce || C.shot === 'meow', life: C.range || 1.4, max: C.range || 1.4, hit: new Set() });
   if (C.shot === 'meow') { const s = g.shots; add(0, -9); s[s.length - 1].y = oy - 9; if (dbl) add(0, -20); Audio8.sfx('meow'); }
   else if (p.burst > 0) { for (const a of [-0.3, -0.15, 0, 0.15, 0.3]) add(Math.sin(a) * C.vx, 0); Audio8.sfx('shoot'); }
   else if (dbl) { add(0, -3); add(0, 3); Audio8.sfx(C.shot === 'hairball' ? 'hairball' : 'shoot'); }
@@ -480,7 +480,7 @@ function drawPlay(dt) {
     Sprites.player(ctx, save.char, playerState(), g.t, Math.round(p.x), Math.round(p.y), p.w, p.h);
   }
   if (p.shield) { ctx.strokeStyle = 'rgba(127,179,255,0.7)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(p.x + p.w / 2, p.y + p.h / 2, p.w / 2 + 6, p.h / 2 + 5, 0, 0, 7); ctx.stroke(); }
-  for (const s of g.shots) Sprites.shot(ctx, s.type, Math.round(s.x), Math.round(s.y), g.t, s.life / s.max);
+  for (const s of g.shots) Sprites.shot(ctx, s.type, Math.round(s.x), Math.round(s.y), g.t, s.life / s.max, s.v);
   for (const s of g.eshots) Sprites.shot(ctx, 'paper', Math.round(s.x), Math.round(s.y), g.t);
   for (const q of g.parts) box(Math.round(q.x), Math.round(q.y), 2, 2, q.col);
   ctx.restore();

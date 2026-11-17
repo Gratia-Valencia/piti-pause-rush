@@ -163,14 +163,18 @@ const Sprites = (() => {
     }
   }
 
-  function shot(c, type, x, y, t, life) {
+  function shot(c, type, x, y, t, life, v) {
     switch (type) {
       case 'bullet': R(c,'#fff6b0',x,y,6,2); R(c,'#ffcf3f',x-2,y,2,2); break;
       case 'hairball': if (!fromSheet(c, 'icons', 'yarn', 0, x, y, 6, 8)) { R(c,'#7a5230',x,y,6,6); R(c,'#a9784a',x+1,y+1,3,2); } break;
       case 'meow':
+        if (fromSheet(c, 'notes', 'note', ((v || 0) + 0.5) / 10, x, y + 1 + Math.round(Math.sin(t * 14 + (v || 0)) * 2), 12, 14)) {
+          c.globalAlpha = Math.max(0, life) * 0.6;
+        }
         c.strokeStyle = 'rgba(255,143,163,' + Math.max(0, life).toFixed(2) + ')'; c.lineWidth = 2;
         c.beginPath(); c.arc(x, y + 8, 8, -1, 1); c.stroke();
         c.beginPath(); c.arc(x - 4, y + 8, 5, -1, 1); c.stroke();
+        c.globalAlpha = 1;
         break;
       case 'paper': R(c,'#f4f1ec',x,y,8,6); R(c,'#aab',x+1,y+1,6,1); R(c,'#aab',x+1,y+3,5,1); break;
     }
