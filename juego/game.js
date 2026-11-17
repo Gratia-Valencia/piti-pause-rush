@@ -434,6 +434,11 @@ function update(dt) {
     if (s.kind === 'bat') homing(s, dt);
     s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
     for (const f of g.foes) if (!f.dead && !s.hit.has(f) && hit(s, f)) { s.hit.add(f); damage(f, s.dmg); if (s.type === 'heart') heartHit(s, f); if (!s.pierce) { s.life = 0; break; } }
+    // los folios se pueden romper a tiros
+    if (s.life > 0) for (const e of g.eshots) if (!e.dead && hit(s, { x: e.x - 2, y: e.y - 3, w: e.w + 4, h: e.h + 6 })) {
+      e.dead = true; burst(e.x + 5, e.y + 4, '#f4f1ec', 6, 70); Audio8.sfx('enemy'); g.pops.push({ x: e.x + 5, y: e.y - 6, s: '¡ras!', col: '#fff', life: 0.5 });
+      if (!s.pierce) { s.life = 0; break; }
+    }
     if (g.boss && !g.boss.enter && s.life > 0 && !s.hit.has('boss') && hit(s, { x: g.boss.x + 16, y: g.boss.y + 18, w: 104, h: 128 })) { s.hit.add('boss'); damageBoss(s.dmg); if (s.type === 'heart') heartHit(s, null); if (!s.pierce) s.life = 0; }
   }
   g.shots = g.shots.filter(s => s.life > 0 && s.x < W + 20 && s.y > -20 && s.y < H);
