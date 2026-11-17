@@ -91,8 +91,22 @@ const FRONT = makeLayer(c => {
   c.fillStyle = '#6b6f80'; c.fillRect(410, GROUND - 20, 3, 20); c.fillRect(405, GROUND - 22, 13, 3);
 });
 let scrollX = 0;
+// Fondos de Gemini (si no cargan, se usan los provisionales de arriba)
+const BG = {};
+for (const [k, f] of [['sky', 'fondo-cielo'], ['mid', 'fondo-edificios'], ['front', 'fondo-azotea'], ['cover', 'portada']]) {
+  const im = new Image(); im.src = 'assets/' + f + '.png'; BG[k] = im;
+}
+const ok = im => im && im.complete && im.naturalWidth > 0;
+function tile(im, k, y) {
+  const w = im.naturalWidth, o = -((scrollX * k) % w);
+  for (let x = Math.floor(o); x < W; x += w) ctx.drawImage(im, x, y);
+}
 function drawWorld(dt, speed) {
   scrollX += speed * dt;
+  if (ok(BG.sky) && ok(BG.mid) && ok(BG.front)) {
+    tile(BG.sky, 0.08, 0); tile(BG.mid, 0.3, 0); tile(BG.front, 1, -12);
+    return;
+  }
   ctx.drawImage(SKY, 0, 0);
   for (const [img, k] of [[FAR, 0.1], [MID, 0.35], [FRONT, 1]]) {
     const o = -((scrollX * k) % W);
@@ -477,10 +491,10 @@ function drawPlay(dt) {
 function drawHud() {
   const p = g.p;
   for (let i = 0; i < p.maxHp; i++) {
-    if (i < p.hp) Sprites.pickup(ctx, 'heart', 6 + i * 13, 6, 0);
-    else { ctx.globalAlpha = 0.25; Sprites.pickup(ctx, 'heart', 6 + i * 13, 6, 0); ctx.globalAlpha = 1; }
+    if (i < p.hp) Sprites.pickup(ctx, 'heart', 6 + i * 15, 5, 0);
+    else { ctx.globalAlpha = 0.25; Sprites.pickup(ctx, 'heart', 6 + i * 15, 5, 0); ctx.globalAlpha = 1; }
   }
-  if (p.shield) Sprites.pickup(ctx, 'shield', 8 + p.maxHp * 13, 6, 0);
+  if (p.shield) Sprites.pickup(ctx, 'shield', 8 + p.maxHp * 15, 5, 0);
   text(Math.floor(g.dist) + ' m', W / 2, 5, 8, '#fff', 'center');
   Sprites.pickup(ctx, 'coin', W - 78, 4, 0); text('' + g.coins, W - 64, 6, 8, '#ffcf3f');
   // pausa
@@ -488,7 +502,7 @@ function drawHud() {
   // buffs activos
   let bx = 6;
   for (const k of ['coffee', 'double', 'magnet']) if (g.buffs[k] > 0) {
-    Sprites.pickup(ctx, k, bx, 24, 0); box(bx, 38, Math.round(12 * g.buffs[k] / (7 + 3 * lvl('coffee'))), 2, '#ffcf3f'); bx += 16;
+    Sprites.pickup(ctx, k, bx, 24, 0); box(bx, 40, Math.round(12 * g.buffs[k] / (7 + 3 * lvl('coffee'))), 2, '#ffcf3f'); bx += 16;
   }
   // especial
   const C = CHARS[save.char], full = C.cd * (1 - 0.15 * lvl('special'));
@@ -512,19 +526,23 @@ function drawHud() {
 // ---------- Pantallas ----------
 function drawTitle(dt) {
   drawWorld(dt, 40);
-  ctx.fillStyle = 'rgba(13,10,18,0.35)'; ctx.fillRect(0, 0, W, H);
-  const y = 34 + Math.sin(stateT * 2) * 2;
-  text('PITI-PAUSE', W / 2, y, 32, '#ff4d6d', 'center', '#2a0a10');
-  text('RUSH', W / 2, y + 40, 24, '#fff', 'center', '#c4142c');
-  text('Una pausa muy movida', W / 2, y + 74, 8, '#ffcf3f', 'center');
-  Sprites.player(ctx, 'mai', 'run', stateT, 150, GROUND - 38, 16, 38);
-  Sprites.player(ctx, 'aiden', 'run', stateT + 0.2, 104, GROUND - 20, 26, 20);
-  Sprites.player(ctx, 'nobodi', 'run', stateT + 0.4, 62, GROUND - 20, 26, 20);
-  button(W / 2 - 60, 132, 120, 22, 'JUGAR', () => setState('select'), { size: 8 });
-  button(W / 2 - 60, 160, 120, 22, 'MEJORAS', () => setState('shop'));
-  button(W / 2 - 60, 188, 120, 18, save.muted ? 'SONIDO: NO' : 'SONIDO: SÍ', () => { save.muted = !save.muted; Audio8.setMuted(save.muted); persist(); });
-  text('Récord: ' + save.best + ' m', 8, H - 14, 8, '#fff');
-  Sprites.pickup(ctx, 'coin', W - 70, H - 16, 0); text('' + save.points, W - 56, H - 14, 8, '#ffcf3f');
+  const cw = ok(BG.cover) ? BG.cover.naturalWidth : 0, cx = (W - cw) / 2;
+  ctx.fillStyle = 'rgba(13,10,18,0.45)'; ctx.fillRect(0, 0, W, H);
+  if (cw) { ctx.drawImage(BG.cover, W - cw, 0); box(W - cw - 2, 0, 2, H, '#ff4d6d'); }
+  else {
+    Sprites.player(ctx, 'mai', 'run', stateT, 150, GROUND - 38, 16, 38);
+    Sprites.player(ctx, 'aiden', 'run', stateT + 0.2, 104, GROUND - 20, 26, 20);
+    Sprites.player(ctx, 'nobodi', 'run', stateT + 0.4, 62, GROUND - 20, 26, 20);
+  }
+  const y = 26 + Math.sin(stateT * 2) * 2;
+  text('PITI-PAUSE', cx, y, 32, '#ff4d6d', 'center', '#2a0a10');
+  text('RUSH', cx, y + 40, 24, '#fff', 'center', '#c4142c');
+  text('Una pausa muy movida', cx, y + 74, 8, '#ffcf3f', 'center');
+  button(cx - 60, 128, 120, 24, 'JUGAR', () => setState('select'), { active: true });
+  button(cx - 60, 158, 120, 22, 'MEJORAS', () => setState('shop'));
+  button(cx - 60, 186, 120, 20, save.muted ? 'SONIDO: NO' : 'SONIDO: SÍ', () => { save.muted = !save.muted; Audio8.setMuted(save.muted); persist(); });
+  text('Récord: ' + save.best + ' m', 10, H - 18, 8, '#fff');
+  Sprites.pickup(ctx, 'coin', W - cw - 64, H - 20, 0); text('' + save.points, W - cw - 48, H - 18, 8, '#ffcf3f');
 }
 function drawSelect(dt) {
   drawWorld(dt, 20);

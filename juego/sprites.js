@@ -143,9 +143,12 @@ const Sprites = (() => {
     if (phase === 2) { R(c,'#ff6a00',x+30,y+12+(f?0:2),4,4); R(c,'#ffe066',x+60,y+10+(f?2:0),3,3); }
   }
 
+  const ICON_SIZE = { coin: 12, double: 14 };
   function pickup(c, type, x, y, t) {
     const b = Math.round(Math.sin(t * 5) * 1.5);
     y += b;
+    const sz = ICON_SIZE[type] || 12;
+    if (fromSheet(c, 'icons', type, 0, x, y, sz - 2, sz)) return;
     switch (type) {
       case 'coin':
         R(c,'#ffcf3f',x+1,y,8,10); R(c,'#ffcf3f',x,y+1,10,8); R(c,'#b8860b',x+2,y+2,6,6);
@@ -163,7 +166,7 @@ const Sprites = (() => {
   function shot(c, type, x, y, t, life) {
     switch (type) {
       case 'bullet': R(c,'#fff6b0',x,y,6,2); R(c,'#ffcf3f',x-2,y,2,2); break;
-      case 'hairball': R(c,'#7a5230',x,y,6,6); R(c,'#a9784a',x+1,y+1,3,2); break;
+      case 'hairball': if (!fromSheet(c, 'icons', 'yarn', 0, x, y, 6, 8)) { R(c,'#7a5230',x,y,6,6); R(c,'#a9784a',x+1,y+1,3,2); } break;
       case 'meow':
         c.strokeStyle = 'rgba(255,143,163,' + Math.max(0, life).toFixed(2) + ')'; c.lineWidth = 2;
         c.beginPath(); c.arc(x, y + 8, 8, -1, 1); c.stroke();
