@@ -170,7 +170,7 @@ const Sprites = (() => {
         const d = DATA.bullet, im = IMG.bullet;
         if (d && im && im.complete && im.naturalWidth) {
           const a = d.anims.fly, [sx, sy, fw, fh] = d.frames[a.f[Math.floor(t * a.fps) % a.f.length]];
-          c.drawImage(im, sx, sy, fw, fh, Math.round(x + 14 - fw), Math.round(y - 9), fw, fh); break;
+          c.drawImage(im, sx, sy, fw, fh, Math.round(x + 14 - fw), Math.round(y - 11), fw, fh); break;
         }
       }
       y += 3; R(c,'#fff6b0',x,y,9,3); R(c,'#ffcf3f',x-3,y,3,3); R(c,'#ff8a3d',x-5,y+1,2,1); break;
