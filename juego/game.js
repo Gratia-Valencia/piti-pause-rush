@@ -23,11 +23,11 @@ Audio8.setMuted(save.muted);
 
 // ---------- Datos ----------
 const CHARS = {
-  mai:    { name: 'Mai',    w: 14, h: 28, sh: 13, shot: 'bullet',   rate: 0.17, dmg: 1, vx: 430, special: 'burst', cd: 8,
+  mai:    { name: 'Mai',    w: 16, h: 38, sh: 14, shot: 'bullet',   rate: 0.17, dmg: 1, vx: 430, special: 'burst', cd: 8,
             lines: ['Doble revólver', 'Especial:', 'Ráfaga gótica'] },
-  aiden:  { name: 'Aiden',  w: 22, h: 14, sh: 8,  shot: 'hairball', rate: 0.32, dmg: 2, vx: 300, pierce: true, special: 'dash', cd: 6,
+  aiden:  { name: 'Aiden',  w: 26, h: 20, sh: 8,  shot: 'hairball', rate: 0.32, dmg: 2, vx: 300, pierce: true, special: 'dash', cd: 6,
             lines: ['Bolas de pelo', 'que atraviesan', 'Especial:', 'Embestida'] },
-  nobodi: { name: 'Nobodi', w: 22, h: 14, sh: 8,  shot: 'meow',     rate: 0.36, dmg: 2, vx: 250, range: 0.4, special: 'sonic', cd: 7, dj: true,
+  nobodi: { name: 'Nobodi', w: 26, h: 20, sh: 8,  shot: 'meow',     rate: 0.36, dmg: 2, vx: 250, range: 0.4, special: 'sonic', cd: 7, dj: true,
             lines: ['Maullido fuerte', 'Doble salto', 'Especial:', 'Maullido sónico'] },
 };
 const ORDER = ['mai', 'aiden', 'nobodi'];
@@ -48,8 +48,7 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 function text(s, x, y, size, col, align, shadow) {
-  s = String(s).replace(/[ÁÉÍÓÚ]/g, c => 'AEIOU'['ÁÉÍÓÚ'.indexOf(c)]); // la letra pixel no trae mayúsculas con tilde
-  ctx.font = (size || 8) + 'px PS2P, monospace';
+  ctx.font = Math.round((size || 8) * 1.25) + 'px PIX, monospace';
   ctx.textAlign = align || 'left'; ctx.textBaseline = 'top';
   if (shadow !== false) { ctx.fillStyle = shadow || '#000'; ctx.fillText(s, Math.round(x) + 1, Math.round(y) + 1); }
   ctx.fillStyle = col || '#fff'; ctx.fillText(s, Math.round(x), Math.round(y));
@@ -235,10 +234,10 @@ function spawnFoe() {
   const diff = Math.min(1, g.dist / 3000);
   const r = Math.random();
   let f;
-  if (r < 0.22) f = { type: 'printer', w: 26, h: 24, y: GROUND - 24, hp: 3, vx: 0, fireT: rnd(0.6, 1.4) };
-  else if (r < 0.42) f = { type: 'mug', w: 14, h: 16, y: GROUND - 16, hp: 2, vx: -70 - 40 * diff };
-  else if (r < 0.64) f = { type: 'stapler', w: 20, h: 12, y: rnd(120, 190), hp: 1, vx: -50, base: 0, wave: rnd(0, 6) };
-  else if (r < 0.82 && g.dist > 250) f = { type: 'email', w: 18, h: 14, y: rnd(30, 60), hp: 1, vx: -90, dived: false };
+  if (r < 0.22) f = { type: 'printer', w: 30, h: 26, y: GROUND - 26, hp: 3, vx: 0, fireT: rnd(0.6, 1.4) };
+  else if (r < 0.42) f = { type: 'mug', w: 18, h: 22, y: GROUND - 22, hp: 2, vx: -70 - 40 * diff };
+  else if (r < 0.64) f = { type: 'stapler', w: 26, h: 16, y: rnd(120, 190), hp: 1, vx: -50, base: 0, wave: rnd(0, 6) };
+  else if (r < 0.82 && g.dist > 250) f = { type: 'email', w: 22, h: 18, y: rnd(30, 60), hp: 1, vx: -90, dived: false };
   else f = { type: 'crate', w: 20, h: 20, y: GROUND - 20, hp: 2, vx: 0 };
   f.x = W + 10; f.t = 0; f.atk = 0; f.base = f.y; f.hitBy = new Set();
   g.foes.push(f);
@@ -255,7 +254,7 @@ function spawnPlat() {
 }
 function spawnBoss() {
   const hp = 40 + g.bosses * 18;
-  g.boss = { x: W + 20, y: GROUND - 90, w: 90, h: 90, hp, maxHp: hp, t: 0, atkT: 2.5, hurt: 0, phase: 1, enter: true };
+  g.boss = { x: W + 20, y: GROUND - 112, w: 100, h: 112, atkAnim: 0, hp, maxHp: hp, t: 0, atkT: 2.5, hurt: 0, phase: 1, enter: true };
   say('¡LA FOTOCOPIADORA INFERNAL!', 2.5); Audio8.play('boss');
 }
 
@@ -297,7 +296,7 @@ function damageBoss(d) {
   const b = g.boss; b.hp -= d; b.hurt = 0.1;
   if (b.hp <= b.maxHp / 2) b.phase = 2;
   if (b.hp <= 0) {
-    for (let i = 0; i < 6; i++) burst(b.x + rnd(0, 90), b.y + rnd(0, 90), pick(['#ff4d6d', '#ffcf3f', '#fff']), 14, 160);
+    for (let i = 0; i < 6; i++) burst(b.x + rnd(0, 100), b.y + rnd(0, 110), pick(['#ff4d6d', '#ffcf3f', '#fff']), 14, 160);
     Audio8.sfx('boom'); g.shake = 0.6; g.flash = 0.3;
     for (let i = 0; i < 12; i++) g.pickups.push({ type: 'coin', x: b.x + rnd(0, 80), y: rnd(120, 200), w: 10, h: 10 });
     g.pickups.push({ type: 'heart', x: b.x + 40, y: 150, w: 12, h: 12 });
@@ -377,26 +376,26 @@ function update(dt) {
   const b = g.boss;
   if (b) {
     b.t += dt; b.hurt = Math.max(0, b.hurt - dt);
-    if (b.enter) { b.x -= 80 * dt; if (b.x <= 370) { b.x = 370; b.enter = false; } }
+    if (b.enter) { b.x -= 80 * dt; if (b.x <= 360) { b.x = 360; b.enter = false; } }
     else {
-      b.y = GROUND - 90 + Math.sin(b.t * 1.5) * 4;
+      b.y = GROUND - 112 + Math.sin(b.t * 1.5) * 2; b.atkAnim = Math.max(0, b.atkAnim - dt);
       b.atkT -= dt;
       if (b.atkT <= 0) {
-        const a = Math.random();
+        b.atkAnim = 0.4; const a = Math.random();
         if (a < 0.55) { for (const hy of pick([[GROUND - 12, GROUND - 50], [GROUND - 30, GROUND - 70], [GROUND - 12, GROUND - 70]])) g.eshots.push({ x: b.x, y: hy, w: 8, h: 6, vx: -170 - (b.phase - 1) * 40, vy: 0 }); }
-        else if (a < 0.8) { const f = { type: 'email', w: 18, h: 14, x: b.x, y: b.y + 10, hp: 1, vx: -90, dived: false, t: 0, atk: 0, hitBy: new Set() }; f.base = f.y; g.foes.push(f); }
+        else if (a < 0.8) { const f = { type: 'email', w: 22, h: 18, x: b.x, y: b.y + 30, hp: 1, vx: -90, dived: false, t: 0, atk: 0, hitBy: new Set() }; f.base = f.y; g.foes.push(f); }
         else { for (let i = 0; i < 5; i++) g.eshots.push({ x: b.x + 20, y: b.y + 20, w: 8, h: 6, vx: -120 - i * 25, vy: -160 + i * 25, grav: true }); }
         b.atkT = b.phase === 2 ? rnd(1, 1.6) : rnd(1.6, 2.4);
       }
     }
-    if (hit(p, { x: b.x + 4, y: b.y + 20, w: 82, h: 70 })) { hurtPlayer(); if (p.dash > 0 && !b.enter) damageBoss(3); }
+    if (hit(p, { x: b.x + 12, y: b.y + 14, w: 78, h: 96 })) { hurtPlayer(); if (p.dash > 0 && !b.enter) damageBoss(3); }
   }
 
   // disparos
   for (const s of g.shots) {
     s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
     for (const f of g.foes) if (!f.dead && !s.hit.has(f) && hit(s, f)) { s.hit.add(f); damage(f, s.dmg); if (!s.pierce) { s.life = 0; break; } }
-    if (g.boss && !g.boss.enter && s.life > 0 && !s.hit.has('boss') && hit(s, { x: g.boss.x + 4, y: g.boss.y + 20, w: 82, h: 70 })) { s.hit.add('boss'); damageBoss(s.dmg); if (!s.pierce) s.life = 0; }
+    if (g.boss && !g.boss.enter && s.life > 0 && !s.hit.has('boss') && hit(s, { x: g.boss.x + 12, y: g.boss.y + 14, w: 78, h: 96 })) { s.hit.add('boss'); damageBoss(s.dmg); if (!s.pierce) s.life = 0; }
   }
   g.shots = g.shots.filter(s => s.life > 0 && s.x < W + 20 && s.y > -20 && s.y < H);
   for (const s of g.eshots) {
@@ -439,6 +438,7 @@ function update(dt) {
 function playerState() {
   const p = g.p;
   if (p.hurtT > 0) return 'hurt';
+  if (p.dash > 0) return 'special';
   if (p.slide) return 'slide';
   if (!p.ground) return p.vy < 0 ? 'jump' : 'fall';
   return p.shootAnim > 0 ? 'runshoot' : 'run';
@@ -453,10 +453,10 @@ function drawPlay(dt) {
     box(Math.round(pl.x) + 10, pl.y - 9, 14, 9, '#2a2d35'); box(Math.round(pl.x) + 11, pl.y - 8, 12, 6, '#5fd3ff');
   }
   for (const it of g.pickups) Sprites.pickup(ctx, it.type, Math.round(it.x), Math.round(it.y), g.t + it.x * 0.01);
-  for (const f of g.foes) Sprites.enemy(ctx, f.type, f.t, Math.round(f.x), Math.round(f.y), f.atk > 0);
+  for (const f of g.foes) Sprites.enemy(ctx, f.type, f.t, Math.round(f.x), Math.round(f.y), f.atk > 0, f.w, f.h);
   if (g.boss) {
     const b = g.boss;
-    Sprites.boss(ctx, b.t, Math.round(b.x), Math.round(b.y), b.hurt > 0, b.phase);
+    Sprites.boss(ctx, b.t, Math.round(b.x), Math.round(b.y), b.hurt > 0, b.phase, b.atkAnim > 0);
     box(140, 26, 200, 6, '#2a0a10', '#ff4d6d'); box(141, 27, Math.max(0, 198 * b.hp / b.maxHp), 4, '#ff4d6d');
     text('FOTOCOPIADORA INFERNAL', 240, 16, 8, '#ffb3c1', 'center');
   }
@@ -517,9 +517,9 @@ function drawTitle(dt) {
   text('PITI-PAUSE', W / 2, y, 32, '#ff4d6d', 'center', '#2a0a10');
   text('RUSH', W / 2, y + 40, 24, '#fff', 'center', '#c4142c');
   text('Una pausa muy movida', W / 2, y + 74, 8, '#ffcf3f', 'center');
-  Sprites.player(ctx, 'mai', 'run', stateT, 150, GROUND - 28, 14, 28);
-  Sprites.player(ctx, 'aiden', 'run', stateT + 0.2, 110, GROUND - 14, 22, 14);
-  Sprites.player(ctx, 'nobodi', 'run', stateT + 0.4, 74, GROUND - 14, 22, 14);
+  Sprites.player(ctx, 'mai', 'run', stateT, 150, GROUND - 38, 16, 38);
+  Sprites.player(ctx, 'aiden', 'run', stateT + 0.2, 104, GROUND - 20, 26, 20);
+  Sprites.player(ctx, 'nobodi', 'run', stateT + 0.4, 62, GROUND - 20, 26, 20);
   button(W / 2 - 60, 132, 120, 22, 'JUGAR', () => setState('select'), { size: 8 });
   button(W / 2 - 60, 160, 120, 22, 'MEJORAS', () => setState('shop'));
   button(W / 2 - 60, 188, 120, 18, save.muted ? 'SONIDO: NO' : 'SONIDO: SÍ', () => { save.muted = !save.muted; Audio8.setMuted(save.muted); persist(); });
@@ -609,7 +609,7 @@ function frame(now) {
   else if (state === 'over') drawOver(dt);
   requestAnimationFrame(frame);
 }
-const fontReady = (document.fonts && document.fonts.load) ? document.fonts.load('8px PS2P') : Promise.resolve();
+const fontReady = (document.fonts && document.fonts.load) ? document.fonts.load('10px PIX') : Promise.resolve();
 Promise.race([fontReady, new Promise(r => setTimeout(r, 1500))]).then(() => {
   setState('title'); requestAnimationFrame(frame);
   // Solo para pruebas: index.html#prueba-play, #prueba-select, #prueba-shop, #prueba-over

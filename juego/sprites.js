@@ -3,16 +3,12 @@
 // Mientras no estén las hojas de Gemini, se dibujan figuras pixel provisionales por código.
 // Cuando una hoja esté lista, se apunta en SHEETS y el juego la usa sola.
 const Sprites = (() => {
-  // Hojas de Gemini ya recortadas (assets/sprites/*.png). Cada animación: [fila, primera columna, nº de fotogramas, fps].
-  // Se rellena cuando lleguen las imágenes.
-  const SHEETS = {
-    // mai: { src: 'assets/sprites/mai.png', cols: 6, rows: 4, h: 34, anims: { run: [0,0,6,12], idle: [1,0,2,3], jump: [1,2,2,8], fall: [1,4,2,8], shoot: [2,0,2,10], runshoot: [2,2,4,12], hurt: [3,0,1,1], slide: [3,1,2,8], win: [3,3,1,1] } },
-  };
-  for (const k in SHEETS) {
-    const s = SHEETS[k]; s.img = new Image(); s.ready = false;
-    s.img.onload = () => { s.cw = s.img.width / s.cols; s.ch = s.img.height / s.rows; s.ready = true; };
-    s.img.src = s.src;
-  }
+  // Hojas de Gemini ya recortadas y escaladas (sprites-data.js, generado por build.py).
+  const DATA = (typeof SPRITE_DATA !== 'undefined') ? SPRITE_DATA : {};
+  const IMG = {};
+  for (const k in DATA) { const im = new Image(); im.src = DATA[k].src; IMG[k] = im; }
+  // Animaciones que se alinean por la izquierda (llevan arma, estela o van tumbadas)
+  const LEFT = new Set(['shoot', 'runshoot', 'slide', 'dash', 'dashfx', 'ball']);
 
   const portraits = {};
   for (const id of ['mai', 'aiden', 'nobodi']) {
@@ -21,19 +17,18 @@ const Sprites = (() => {
 
   const R = (c, col, x, y, w, h) => { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), w, h); };
 
-  function fromSheet(c, id, anim, t, x, y, w, h, flip) {
-    const s = SHEETS[id];
-    if (!s || !s.ready) return false;
-    const a = s.anims[anim] || s.anims.run;
-    const f = a[2] > 1 ? Math.floor(t * a[3]) % a[2] : 0;
-    const sw = s.cw, sh = s.ch, dh = s.h, dw = dh * sw / sh;
-    const dx = x + w / 2 - dw / 2, dy = y + h - dh;
-    c.save();
-    if (flip) { c.translate(dx + dw, dy); c.scale(-1, 1); c.drawImage(s.img, (a[1] + f) * sw, a[0] * sh, sw, sh, 0, 0, dw, dh); }
-    else c.drawImage(s.img, (a[1] + f) * sw, a[0] * sh, sw, sh, dx, dy, dw, dh);
-    c.restore();
+  function fromSheet(c, id, anim, t, x, y, w, h) {
+    const d = DATA[id], im = IMG[id];
+    if (!d || !im || !im.complete || !im.naturalWidth) return false;
+    const a = d.anims[anim] || d.anims.run || d.anims.move || d.anims.idle;
+    if (!a) return false;
+    const fi = a.f[Math.floor(t * a.fps) % a.f.length];
+    const [sx, sy, fw, fh] = d.frames[fi];
+    const dx = LEFT.has(anim) ? x - 3 : x + w / 2 - fw / 2;
+    c.drawImage(im, sx, sy, fw, fh, Math.round(dx), Math.round(y + h - fh), fw, fh);
     return true;
   }
+  const has = id => !!DATA[id];
 
   // ---------- Provisionales ----------
   function mai(c, st, t, x, y) {
@@ -93,15 +88,20 @@ const Sprites = (() => {
     if (st === 'hurt') { c.globalAlpha = 0.5; R(c,'#fff',x-4,y-3,27,17); c.globalAlpha = 1; }
   }
 
+  const MAP = {
+    mai:    { runshoot: 'runshoot', special: 'runshoot' },
+    aiden:  { runshoot: 'run', slide: 'dash', special: 'dashfx' },
+    nobodi: { runshoot: 'run', slide: 'ball', special: 'shoot' },
+  };
   function player(c, id, st, t, x, y, w, h) {
-    const anim = st;
-    if (fromSheet(c, id, anim, t, x, y, w, h, false)) return;
+    const anim = (MAP[id] && MAP[id][st]) || st;
+    if (fromSheet(c, id, anim, t, x, y, w, h)) return;
     if (id === 'mai') mai(c, st, t, x, y);
     else cat(c, id, st, t, x + (st === 'slide' ? 0 : 0), y + (h - 14));
   }
 
-  function enemy(c, type, t, x, y, atk) {
-    if (fromSheet(c, 'enemy_' + type, atk ? 'atk' : 'move', t, x, y, 0, 0, false)) return;
+  function enemy(c, type, t, x, y, atk, w, h) {
+    if (fromSheet(c, type, atk ? 'atk' : 'move', t, x, y, w || 20, h || 20)) return;
     const f = Math.floor(t * 8) % 2;
     switch (type) {
       case 'printer':
@@ -131,8 +131,8 @@ const Sprites = (() => {
     }
   }
 
-  function boss(c, t, x, y, hurt, phase) {
-    if (fromSheet(c, 'boss', hurt ? 'hurt' : 'idle', t, x, y, 90, 90, false)) return;
+  function boss(c, t, x, y, hurt, phase, atk) {
+    if (fromSheet(c, 'boss', hurt ? 'hurt' : atk ? 'atk' : 'idle', t, x, y, 100, 112)) return;
     const f = Math.floor(t * 4) % 2;
     R(c,'#5d6170',x,y+20,90,66); R(c,'#8a8f9e',x+4,y+24,82,40); R(c,'#3a3d47',x,y+84,90,6);
     R(c,'#2a2d35',x+10,y+6,70,16); R(c,'#c8ccd8',x+14,y+10,62,8);
@@ -173,5 +173,5 @@ const Sprites = (() => {
     }
   }
 
-  return { player, enemy, boss, pickup, shot, portraits, SHEETS };
+  return { player, enemy, boss, pickup, shot, portraits, has };
 })();
