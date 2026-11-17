@@ -1,3 +1,5 @@
+<img src="icono-512.png" width="128" align="right" alt="Icono de Piti-Pause Rush">
+
 # 🚬☕ Piti-Pause Rush
 
 Un run & gun infinito en pixel art. Mai sale a su pausa en la azotea de la oficina… y la oficina se ha vuelto loca.
